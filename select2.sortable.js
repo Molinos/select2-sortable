@@ -2,18 +2,18 @@
  * jQuery Select2 Sortable
  * - enable select2 to be sortable via normal select element
  * 
- * author      : Vafour
+ * author      : Vafour, Modified by Kinsey Van Ost
  * inspired by : jQuery Chosen Sortable (https://github.com/mrhenry/jquery-chosen-sortable)
  * License     : GPL
  */
 
 (function($){
 	$.fn.extend({
-		select2SortableOrder: function(){
+	select2SortableOrder: function(){
+			var args  = Array.prototype.slice.call(arguments, 0);
 			var $this = this.filter('[multiple]');
-
 			$this.each(function(){
-				var $select  = $(this);
+				var $select  = $(this); 
 
 				// skip elements not select2-ed
 				if(typeof($select.data('select2')) !== 'object'){
@@ -24,26 +24,52 @@
 				    unselected = [],
 				    sorted;
 
-				$select.find('option').each(function(){
-					!this.selected && unselected.push(this);
-				});
+				var argList = undefined;
+				if(typeof(args[0]) != 'undefined' && args[0].length > 0 && $.isArray(args[0])){
+					argList = args[0];
+					sorted = [];
+					/*$select.val(argList);*/
+					$select.find('option').each(function(){
+						var isSelected = false;
+						for(var i = 0; i < argList.length; i++){
+							var id = argList[i];
+							
+							if(id == this.value){
+								sorted[i] = $select.find('option[value="' + id + '"]')[0];
+								isSelected = true;
+								continue;
+							}
 
-				sorted = $($select2.find('.select2-choices li[class!="select2-search-field"]').map( function() {
-					if (!this) {
-						return undefined;
-					}
-					var id = $(this).data('select2Data').id;
-					return $select.find('option[value="' + id + '"]')[0];
-				}));
+						}
+						if(!isSelected){
+							!this.selected && unselected.push(this);
+						}
+					}); 
+				}
+				else{
+					$select.find('option').each(function(){
+						!this.selected && unselected.push(this);
+					}); 
+					sorted = $($select2.find('.select2-choices li[class!="select2-search-field"]').map( function() {
+						if (!this) {
+							return undefined;
+						}
+						var id = $(this).data('select2Data').id;
+						return $select.find('option[value="' + id + '"]')[0];
+					}));
+				}
 
 				sorted.push.apply(sorted, unselected);
 				$select.children().remove();
 				$select.append(sorted);
+				if(typeof(argList) != 'undefined')
+					$select.select2('val', argList).trigger('change');
 			});
 
 			return $this;
 		},
 		select2Sortable: function(){
+			//when constructing this sortable, we should ensure that the values are in the order that they were saved in.
 			var args         = Array.prototype.slice.call(arguments, 0);
 			    $this        = this.filter('[multiple]'),
 			    validMethods = ['destroy'];
@@ -55,14 +81,20 @@
 					sortableOptions : {
 						placeholder : 'ui-state-highlight',
 						items       : 'li:not(.select2-search-field)',
-						tolerance   : 'pointer'
-					}
+						tolerance   : 'pointer',
+						//data 	    : []
+					},
 				};
 				var options = $.extend(defaultOptions, args[0]);
 
 				// Init select2 only if not already initialized to prevent select2 configuration loss
 				if(typeof($this.data('select2')) !== 'object'){
-					$this.select2();
+					$this.select2(options.select2Options);
+				}
+
+				if(typeof(options.data) != undefined && $.isArray(options.data) && options.data.length > 0){
+					var sortedOptions = options.data;
+					$this.select2SortableOrder(sortedOptions);
 				}
 
 				$this.each(function(){
@@ -91,6 +123,12 @@
 
 				});
 			}
+			else if($.isArray(args[0]) && args[0].length > 0){
+				var sortedOptions = args[0];
+				$this.select2SortableOrder(sortedOptions);
+				$this.select2Sortable();
+			}
+			
 			else if(typeof(args[0] === 'string'))
 			{
 				if($.inArray(args[0], validMethods) == -1)
@@ -102,6 +140,7 @@
 					$this.select2SortableDestroy();
 				}
 			}
+
 			return $this;
 		},
 		select2SortableDestroy: function(){
