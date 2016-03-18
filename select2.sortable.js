@@ -50,7 +50,7 @@
 					$select.find('option').each(function(){
 						!this.selected && unselected.push(this);
 					}); 
-					sorted = $($select2.find('.select2-choices li[class!="select2-search-field"]').map( function() {
+					sorted = $($select2.find('.select2-selection__choice li[class!="select2-search-field"]').map( function() {
 						if (!this) {
 							return undefined;
 						}
@@ -99,7 +99,7 @@
 
 				$this.each(function(){
 					var $select  = $(this),
-					    $select2choices = $select.siblings('.select2-container').find('.select2-choices');
+					    $select2choices = $select.siblings('.select2-container').first('.select2-selection__choice');
 
 					// Init jQuery UI Sortable
 					$select2choices.sortable(options.sortableOptions);
@@ -147,7 +147,7 @@
 			var $this = this.filter('[multiple]');
 			$this.each(function(){
 				var $select         = $(this),
-				    $select2choices = $select.parent().find('.select2-choices');
+				    $select2choices = $select.parent().find('.select2-selection__choice');
 
 				// unbind form submit event
 				$select.closest('form').unbind('submit.select2sortable');
