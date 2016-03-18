@@ -50,11 +50,11 @@
 					$select.find('option').each(function(){
 						!this.selected && unselected.push(this);
 					}); 
-					sorted = $($select2.find('.select2-selection__choice li[class!="select2-search-field"]').map( function() {
+					sorted = $($select2.find('.select2-selection__choice[class!="select2-search-field"]').map( function() {
 						if (!this) {
 							return undefined;
 						}
-						var id = $(this).data('select2Data').id;
+						var id = $(this).data('data').id;
 						return $select.find('option[value="' + id + '"]')[0];
 					}));
 				}
